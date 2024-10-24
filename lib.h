@@ -364,4 +364,3 @@ void get_branch_info(vector<string> cmd, int fd)
 
 #endif
 
-
