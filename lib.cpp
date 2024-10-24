@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 #include <nlohmann/json.hpp>
-#include "include/ghc/filesystem.hpp"
+#include "filesystem.hpp"
 
 using std::cin;
 using std::cout;
@@ -358,5 +358,4 @@ void get_branch_info(vector<string> cmd, int fd)
 
     close(fd);
 }
-
 
