@@ -9,9 +9,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include "compbranches.h"
 
 #include <nlohmann/json.hpp>
-#include "include/ghc/filesystem.hpp"
+#include "filesystem.hpp"
 
 using std::cin;
 using std::cout;
