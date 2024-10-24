@@ -1,6 +1,14 @@
 #include <iostream>
 #include <getopt.h>
-#include "lib.h"
+#include <map>
+#include <string>
+#include <vector>
+#include "compbranches.cpp"
+
+using std::cout;
+using std::map;
+using std::string;
+
 
 //Вывод справки
 void print_help()
@@ -126,7 +134,7 @@ int main(int argc, char* argv[])
             }
         };
 
-        option_index = -1; //-1, чтобы проверять короткий ли параметр ибо у длинного индекс будет большой
+        option_index = -1; //-1, чтобы проверять короткий ли параметр ибо у длинного индекс будет больше 0
 
     }
     
@@ -149,12 +157,10 @@ int main(int argc, char* argv[])
 
     char template_path_1[12 + name_branch_1.size()]; //полный путь к временному файлу
     sprintf(template_path_1, "/%s/%sXXXXXX", "tmp", name_branch_1.data());
-    //cout << template_path_1 << endl;
     int fd_1 = mkstemp(template_path_1); //файловый дескриптор файла, идентифицирующий созданный файл
 
     char template_path_2[12 + name_branch_2.size()]; //полный путь к временному файлу
     sprintf(template_path_2, "/%s/%sXXXXXX", "tmp", name_branch_2.data());
-    //cout << template_path_2 << endl;
     int fd_2 = mkstemp(template_path_2); //файловый дескриптор файла, идентифицирующий созданный файл
     
   
