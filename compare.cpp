@@ -173,4 +173,5 @@ int main(int argc, char* argv[])
     compare_branches(name_branch_1.data(), name_branch_2.data());
 
     return 0;
+
 }
