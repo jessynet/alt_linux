@@ -1,7 +1,5 @@
 CC=g++
 
-CFLAGS=-c -Wall
-
 all: compare
 
 compare: compare.cpp
