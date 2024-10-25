@@ -35,8 +35,7 @@ void print_help()
 
 
     cout << "Доступные имена веток:\n";
-    cout << "sisyphus\n" << "sisyphus_e2k\n" << "sisyphus_riscv64\n" << "sisyphus_loongarch64\n" << "p11\n" << "p10\n" << "p10_e2k\n" << "p9\n"
-    << "p9_e2k\n" << "p8\n" << "c10f2\n" << "c10f\n" << "c9f2\n" << "c7\n";    
+    cout << "sisyphus\n" << "p9\n" << "p10\n" << "p11\n";    
 
 }
 
@@ -53,19 +52,9 @@ int main(int argc, char* argv[])
     map<int, string> code_name;
 
     code_name[1] = "sisyphus";
-    code_name[2] = "sisyphus_e2k";
-    code_name[3] = "sisyphus_riscv64";
-    code_name[4] = "sisyphus_loongarch64";
-    code_name[5] = "p11";
-    code_name[6] = "p10";
-    code_name[7] = "p10_e2k";
-    code_name[8] = "p9";
-    code_name[9] = "p9_e2k";
-    code_name[10] = "p8";
-    code_name[11] = "c10f2";
-    code_name[12] = "c10f";
-    code_name[13] = "c9f2";
-    code_name[14] = "c7";
+    code_name[2] = "p9";
+    code_name[3] = "p10";
+    code_name[4] = "p11";
 
     int res, option_index = -1;
     //f - first, s - second
@@ -95,7 +84,7 @@ int main(int argc, char* argv[])
         {
             case 'f':
             {
-                for(int i = 1; i <= 14; i++)
+                for(int i = 1; i <= 4; i++)
                     if(optarg == code_name[i])
                     {
                         name_branch_1 = optarg;
@@ -106,7 +95,7 @@ int main(int argc, char* argv[])
 
             case 's':
             {
-                for(int i = 1; i <= 14; i++)
+                for(int i = 1; i <= 4; i++)
                 {
                     if(code_name[i] == optarg)
                     {
