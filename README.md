@@ -23,7 +23,7 @@ Building and installation instructions:
 8) Remove the library from the source codes directory: rm -f ./libcompbranches.so.
 9) Delete the resulting object file from the source codes directory: make -f Makefile-1 clean.
 10) Run make -f Makefile-2 in the source directory to build the executable.
-11) The resulting executable file «compare» is manually copied from the source codes directory to the /usr/local/bin directory (running the command with superuser privileges).
+11) The resulting executable file «compare» is manually copied from the source codes directory to the /usr/bin directory (running the command with superuser privileges).
 12) Delete the resulting executable file from the source code directory: rm -f ./compare.
 13) To run the utility, simply use the «compare» command with the necessary parameters.
 
