@@ -1,8 +1,9 @@
 #include <iostream>
 #include <getopt.h>
 #include <map>
-#include <string>
+#include <string.h>
 #include <vector>
+
 #include "compbranches.h"
 
 using std::cout;
@@ -140,9 +141,15 @@ int main(int argc, char* argv[])
     //curl -X GET -H 'Content-Type: application/json' https://rdb.altlinux.org/api/export/branch_binary_packages/p10
 
     string rest_api_method = "https://rdb.altlinux.org/api/export/branch_binary_packages/";
-
+   
     string url_branch_1 = rest_api_method + name_branch_1;
     string url_branch_2 = rest_api_method + name_branch_2;
+
+    char* url_b1 = new char[strlen(url_branch_1.data())];
+    strcpy(url_b1, url_branch_1.data()); //char *strcpy(char *str1, const char *str2)
+
+    char* url_b2 = new char[strlen(url_branch_2.data())];
+    strcpy(url_b2, url_branch_2.data()); //char *strcpy(char *str1, const char *str2)
 
     char template_path_1[12 + name_branch_1.size()]; //полный путь к временному файлу
     sprintf(template_path_1, "/%s/%sXXXXXX", "tmp", name_branch_1.data());
@@ -151,13 +158,10 @@ int main(int argc, char* argv[])
     char template_path_2[12 + name_branch_2.size()]; //полный путь к временному файлу
     sprintf(template_path_2, "/%s/%sXXXXXX", "tmp", name_branch_2.data());
     int fd_2 = mkstemp(template_path_2); //файловый дескриптор файла, идентифицирующий созданный файл
+
+    get_branch_info(url_b1, fd_1);
     
-  
-    get_branch_info({"curl", "-X", "GET", "-H", "\'Content-Type: application/json\'", url_branch_1}, fd_1);
-
-    cout << "-------------------------------------------------------------------------------\n";
-
-    get_branch_info({"curl", "-X", "GET", "-H", "\'Content-Type: application/json\'", url_branch_2}, fd_2);
+    get_branch_info(url_b2, fd_2);
 
     compare_branches(name_branch_1.data(), name_branch_2.data());
 
