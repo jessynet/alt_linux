@@ -9,10 +9,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <curl/curl.h>
+
 #include "compbranches.h"
 
+#include <rpm/rpmlib.h>
 #include <nlohmann/json.hpp>
-#include "filesystem.hpp"
+#include <ghc/filesystem.hpp>
 
 using std::cin;
 using std::cout;
@@ -78,6 +81,8 @@ void create_json(vvs p1, vvs p2, vvs pm1, const char* b1, const char* b2)
 
 }
 
+//Пусть всё наш же пакет stardict имеет версию 2.4.8, а также есть более старый 2.4.5. Так вот если %{epoch} у stardict 2.4.5 будет 1, а у 2.4.8 - 0, то пакет 2.4.5 будет всегда новее, чем 2.4.8.
+
 void pckg_vers_more(set<string> s1, set<string> s2, vvs p1, vvs p2, vvs& vers_more)
 {
  
@@ -87,14 +92,24 @@ void pckg_vers_more(set<string> s1, set<string> s2, vvs p1, vvs p2, vvs& vers_mo
     for(int i = 0; i < s1.size(); i++)
     {
         map<string, string> name_vers_b1, name_vers_b2;
-        for(int p = 1; p < p1[i].size(); p+=2) name_vers_b1[p1[i][p]] = p1[i][p + 1]; 
+        for(int p = 1; p < p1[i].size(); p+=3)
+        {
+            string evr = p1[i][p+1] + ":" + p1[i][p+2];
+            name_vers_b1[p1[i][p]] = evr; 
+
+        } 
 
         for(int k = 0; k < s2.size(); k++)
             if(p2[k][0] == p1[i][0]) 
             {
                 exists_arch = true;
                 ind = k;
-                for(int s = 1; s < p2[k].size(); s+=2) name_vers_b2[p2[k][s]] = p2[k][s + 1]; 
+                for(int s = 1; s < p2[k].size(); s+=3)
+                {
+                    string evr = p2[k][s + 1] + ":" + p2[k][s + 2];
+                    name_vers_b2[p2[k][s]] = evr; 
+
+                } 
                 break;
             }
 
@@ -107,7 +122,7 @@ void pckg_vers_more(set<string> s1, set<string> s2, vvs p1, vvs p2, vvs& vers_mo
         {
             if(name_vers_b2.count(name1)) //Если во второй ветке есть такой пакет (есть такой ключ)
             {
-                if(strverscmp(version1.data(), name_vers_b2[name1].data()) > 0)  //>0 если первая версия-строка идет позже второй версии-строки
+                if(rpmvercmp(version1.data(), name_vers_b2[name1].data()) == 1)  // =1,если evr1 больше evr2 (evr-epoch version release)
                     tmp_pck.push_back(name1);  
 
             }
@@ -142,8 +157,8 @@ void pckg_only_this_branch(set<string> s1, set<string> s2, vvs p1, vvs p2, vvs& 
             set<string> tmp_name_b1, tmp_name_b2;
             vector<string> pckg;
             pckg.push_back(p1[i][0]);
-            for(int p = 1; p < p1[i].size(); p+=2) tmp_name_b1.insert(p1[i][p]);
-            for(int k = 1; k < p2[ind].size(); k+=2) tmp_name_b2.insert(p2[ind][k]);
+            for(int p = 1; p < p1[i].size(); p+=3) tmp_name_b1.insert(p1[i][p]);
+            for(int k = 1; k < p2[ind].size(); k+=3) tmp_name_b2.insert(p2[ind][k]);
             for(auto pc1 : tmp_name_b1)
                 if(!tmp_name_b2.count(pc1)) //Пакет не найден во второй ветке
                     pckg.push_back(pc1);
@@ -157,7 +172,7 @@ void pckg_only_this_branch(set<string> s1, set<string> s2, vvs p1, vvs p2, vvs& 
             vector<string> pckg;
             pckg.push_back(p1[i][0]);
 
-            for(int p = 1; p < p1[i].size(); p+=2)
+            for(int p = 1; p < p1[i].size(); p+=3)
                 pckg.push_back(p1[i][p]);
 
             only_p1.push_back(pckg);
@@ -173,25 +188,27 @@ void get_arch_packages(json info, int count, set<string> s, vvs& p)
     int k = 0;
     for(auto i : s)
     {
-        vector<string> packg_vers;
-        packg_vers.push_back(i); //Первым элементом будет архитектура
+        vector<string> packg_epoch_vers;
+        packg_epoch_vers.push_back(i); //Первым элементом будет архитектура
 
         for(int j = 0; j < count; j++)
         {
             if(info[j]["arch"].dump() == i)
             {
-                //Добавление имение пакета и его версии
+                //Добавление имение пакета, его эпохи и версии
                 string name = info[j]["name"].dump();
+                string epoch = info[j]["epoch"].dump();
                 string vers = info[j]["version"].dump();
-                packg_vers.push_back(name);
-                packg_vers.push_back(vers);
+                packg_epoch_vers.push_back(name);
+                packg_epoch_vers.push_back(epoch);
+                packg_epoch_vers.push_back(vers);
                 //Значение будет представлять из себя вектор такого вида: ИМЯ ПАКЕТА1 ВЕРСИЯ ПАКЕТА1 ИМЯ ПАКЕТА2 ВЕРСИЯ ПАКЕТА2..... 
             
             }
                
         }
 
-        p.push_back(packg_vers);
+        p.push_back(packg_epoch_vers);
 
         k++;
     }
@@ -274,9 +291,8 @@ void compare_branches(const char* path_temp_1, const char* path_temp_2)
 
 }
 
-void get_branch_info(vector<string> cmd, int fd)
+void get_branch_info(char* url, int fd)
 {
-
     pid_t pid = fork();
 
     switch(pid){
@@ -289,28 +305,32 @@ void get_branch_info(vector<string> cmd, int fd)
         {
             dup2(fd, STDOUT_FILENO); //Дублирование fd как 1, то есть как стандартный поток вывода
 
-            char* args[cmd.size() + 1]; //массив строк
+            CURL *curl;
+            CURLcode result;
 
-            for(int i = 0; i < cmd.size(); i++)
+            curl_global_init(CURL_GLOBAL_DEFAULT);
+
+            //Инициализация сеанса libcurl 
+            curl = curl_easy_init();
+
+            if(curl)
             {
-                args[i] = new char[strlen(cmd[i].data())];
-                strcpy(args[i], cmd[i].data()); //char *strcpy(char *str1, const char *str2)
-
+                dup2(fd, STDOUT_FILENO); //Дублирование fd как 1, то есть как стандартный поток вывода
+                //Установка URL для получения 
+                curl_easy_setopt(curl, CURLOPT_URL, url);
+                //Отправить все данные в эту функцию (стандартную)
+                curl_easy_setopt (curl, CURLOPT_WRITEFUNCTION , NULL);
+                //Записываем ифнормацию в стандартный поток (можно указать любой FILE*), который теперь перенаправлен на наш временный файл
+                //Для записи вызвается функция, указанная в CURLOPT_WRITEFUNCTION (тут - стандартная функция)
+                curl_easy_setopt(curl, CURLOPT_WRITEDATA, stdout);
+                //Выполняется запрос, result вернет код возврата */
+                result = curl_easy_perform(curl);
+                //Завершение работы и освобождение всех ресурсов
+                curl_easy_cleanup(curl);
             }
 
-            args[cmd.size()] = NULL;
-            
-            char* command_name = args[0];
-            //int execvp(const char* command, char* argv[]);
-            /*command - команда, исполняемый двоичный файл, который является частью PATH переменной среды (например,ls)
-            Второй аргумент ( argv) представляет собой список аргументов для command. Это массив char* строк.
-            В argv содержится полная команда вместе с ее аргументами.(Например, "ls", "-l", NULL)
-            Этот массив ДОЛЖЕН быть NULL завершен, т.е. последний элемент argv должен быть NULL указателем.*/
-
-            execvp(command_name, args);
-            cerr << "Не удалось выполнить команду exec\n";
-            _exit(42);
-            break;
+            curl_global_cleanup();
+            exit(0);
 
         }
         default: //родительский процесс
@@ -326,6 +346,7 @@ void get_branch_info(vector<string> cmd, int fd)
     }
 
     close(fd);
+    
 }
 
 
