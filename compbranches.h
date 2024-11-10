@@ -17,6 +17,6 @@ void pckg_only_this_branch(set<string> s1, set<string> s2, vector<vector<string>
 void get_arch_packages(json info, int count, set<string> s, vector<vector<string>>& p);
 void get_all_arch(json info, set<string>& s, int count_pack);
 void compare_branches(const char* path_temp_1, const char* path_temp_2);
-void get_branch_info(vector<string> cmd, int fd);
+void get_branch_info(char* url, int fd);
 
 #endif 
