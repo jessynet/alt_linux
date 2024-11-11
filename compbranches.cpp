@@ -13,7 +13,10 @@
 
 #include "compbranches.h"
 
-#include <rpm/rpmlib.h>
+//Для OpenSUSE
+//#include <rpm/rpmlib.h>
+//Для Alt Linux
+#include <rpm/rpmvercmp.h>
 #include <nlohmann/json.hpp>
 #include <ghc/filesystem.hpp>
 
