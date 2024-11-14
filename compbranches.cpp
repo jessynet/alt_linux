@@ -14,9 +14,9 @@
 #include "compbranches.h"
 
 //Для OpenSUSE
-//#include <rpm/rpmlib.h>
+#include <rpm/rpmlib.h>
 //Для Alt Linux
-#include <rpm/rpmvercmp.h>
+//#include <rpm/rpmvercmp.h>
 #include <nlohmann/json.hpp>
 #include <ghc/filesystem.hpp>
 
@@ -48,7 +48,7 @@ void create_json(vvs p1, vvs p2, vvs pm1, const char* b1, const char* b2)
     {
         vector <string> tmp_json;
         tmp = p1[j][0].substr(1, p1[j][0].size() - 2);
-        for(int i = 1; i < p1.size(); i++)
+        for(int i = 1; i < p1[j].size(); i++)
             tmp_json.push_back(p1[j][i].substr(1, p1[j][i].size() - 2));
         result["first_branch_packages_only"][tmp] = tmp_json;   
     }
@@ -84,7 +84,7 @@ void create_json(vvs p1, vvs p2, vvs pm1, const char* b1, const char* b2)
 
 }
 
-//Пусть всё наш же пакет stardict имеет версию 2.4.8, а также есть более старый 2.4.5. Так вот если %{epoch} у stardict 2.4.5 будет 1, а у 2.4.8 - 0, то пакет 2.4.5 будет всегда новее, чем 2.4.8.
+//Пусть пакет stardict имеет версию 2.4.8, а также есть более старый 2.4.5. Если %{epoch} у stardict 2.4.5 будет 1, а у 2.4.8 - 0, то пакет 2.4.5 будет всегда новее, чем 2.4.8.
 
 void pckg_vers_more(set<string> s1, set<string> s2, vvs p1, vvs p2, vvs& vers_more)
 {
@@ -125,7 +125,7 @@ void pckg_vers_more(set<string> s1, set<string> s2, vvs p1, vvs p2, vvs& vers_mo
         {
             if(name_vers_b2.count(name1)) //Если во второй ветке есть такой пакет (есть такой ключ)
             {
-                if(rpmvercmp(version1.data(), name_vers_b2[name1].data()) == 1)  // =1,если evr1 больше evr2 (evr-epoch version release)
+                if(rpmvercmp(version1.data(), name_vers_b2[name1].data()) == 1)  // = 1,если evr1 больше evr2 (evr-epoch version release)
                     tmp_pck.push_back(name1);  
 
             }
@@ -205,7 +205,7 @@ void get_arch_packages(json info, int count, set<string> s, vvs& p)
                 packg_epoch_vers.push_back(name);
                 packg_epoch_vers.push_back(epoch);
                 packg_epoch_vers.push_back(vers);
-                //Значение будет представлять из себя вектор такого вида: ИМЯ ПАКЕТА1 ВЕРСИЯ ПАКЕТА1 ИМЯ ПАКЕТА2 ВЕРСИЯ ПАКЕТА2..... 
+                //Значение будет представлять из себя вектор такого вида: ИМЯ ПАКЕТА1 ЭПОХА ВЕРСИЯ ИМЯ ПАКЕТА2 ЭПОХА ВЕРСИЯ ПАКЕТА2..... 
             
             }
                
@@ -273,8 +273,7 @@ void compare_branches(const char* path_temp_1, const char* path_temp_2)
     //Получение пакетов в каждой архитектуре для обеих веток
     get_arch_packages(info_branch_1["packages"], count_pack_br1, arch_b1, arch_packages_b1);
     get_arch_packages(info_branch_2["packages"], count_pack_br2, arch_b2, arch_packages_b2);
-
-
+    
     //Получение пакетов только на одной ветке
     pckg_only_this_branch(arch_b1, arch_b2, arch_packages_b1, arch_packages_b2, json_packages_b1);
     pckg_only_this_branch(arch_b2, arch_b1, arch_packages_b2, arch_packages_b1, json_packages_b2);
@@ -282,7 +281,6 @@ void compare_branches(const char* path_temp_1, const char* path_temp_2)
 
     //Получение пакетов из первой ветки, которые есть во второй и у которых больше версия
     pckg_vers_more(arch_b1, arch_b2, arch_packages_b1, arch_packages_b2, json_more_ver_b1);
-
 
     create_json(json_packages_b1, json_packages_b2, json_more_ver_b1, path_temp_1, path_temp_2);
 
@@ -306,8 +304,6 @@ void get_branch_info(char* url, int fd)
         }
         case 0: //дочерний процесс
         {
-            dup2(fd, STDOUT_FILENO); //Дублирование fd как 1, то есть как стандартный поток вывода
-
             CURL *curl;
             CURLcode result;
 
@@ -333,6 +329,7 @@ void get_branch_info(char* url, int fd)
             }
 
             curl_global_cleanup();
+            
             exit(0);
 
         }
