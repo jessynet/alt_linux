@@ -14,9 +14,9 @@
 #include "compbranches.h"
 
 //Для OpenSUSE
-#include <rpm/rpmlib.h>
+//#include <rpm/rpmlib.h>
 //Для Alt Linux
-//#include <rpm/rpmvercmp.h>
+#include <rpm/rpmvercmp.h>
 #include <nlohmann/json.hpp>
 #include <ghc/filesystem.hpp>
 
