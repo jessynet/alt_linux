@@ -11,8 +11,6 @@
 #include <stdlib.h>
 #include <curl/curl.h>
 
-#include "compbranches.h"
-
 //Для OpenSUSE
 //#include <rpm/rpmlib.h>
 //Для Alt Linux
