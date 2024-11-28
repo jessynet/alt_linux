@@ -16,8 +16,8 @@ Building and installation instructions:
 1) You need to download the source codes from the repository.
 2) You will need libcurl-devel, librpm-devel,nlohmann-json-devel, libghc_filesystem-devel packages (these are the names of the packages in Alt Linux, in other OS they may differ), which can be installed using a package manager or downloaded from the corresponding repositories. You also need the g++ compiler.
 3) Go to the directory with source codes.
-4) Run make -f Makefile in the source codes directory to build the shared library  and an executable file that uses that library.
-5) Delete the resulting object file from the source codes directory: make -f Makefile clean.
+4) Run command make in the source codes directory to build the shared library  and an executable file that uses that library.
+5) Delete the resulting object file from the source codes directory: make clean.
 6) To run the utility, simply use the «./compare» command with the necessary parameters. For help use "./compare -h" or "./compare --help"
 
 
