@@ -1,6 +1,0 @@
-CC=g++
-
-all: compare
-
-compare: compare.cpp
-	$(CC) compare.cpp -lcompbranches -o compare
