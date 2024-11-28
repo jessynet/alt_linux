@@ -160,7 +160,7 @@ int main(int argc, char* argv[])
     int fd_2 = mkstemp(template_path_2); //файловый дескриптор файла, идентифицирующий созданный файл
 
     get_branch_info(url_b1, fd_1);
-    
+
     get_branch_info(url_b2, fd_2);
 
     compare_branches(name_branch_1.data(), name_branch_2.data());
